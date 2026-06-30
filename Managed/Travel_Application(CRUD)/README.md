@@ -38,8 +38,6 @@ This project strengthened my understanding of modern ABAP development, RAP archi
 #SAP #ABAP #RAP #SAPBTP #Steampunk #Fiori #FioriElements #CDS #ODataV4 #EnterpriseApplications #SoftwareDevelopment #ABAPCloud #SAPDeveloper
 
 👨‍💻 Author
-
 S MAHAMMAD ASIF
-
 SAP ABAP Developer
 
