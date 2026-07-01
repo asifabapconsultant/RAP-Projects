@@ -1,0 +1,71 @@
+@Metadata.layer: #CORE
+@UI.headerInfo:
+{
+typeName: 'Booking',
+typeNamePlural: 'Bookings',
+title.value: 'BookingId'
+}
+annotate entity zc_booking_approval48 with
+{
+  @UI.facet: [
+    {
+    id: 'Booking',
+        label: 'Booking',
+        purpose: #STANDARD,
+        type: #IDENTIFICATION_REFERENCE,
+        position: 10
+        }
+      ]
+  @UI:{  lineItem: [{ position: 10 }],
+     identification: [{ position: 10 }]
+  }
+  @EndUserText.label: 'Travel Id'
+  TravelId;
+  @UI:{  lineItem: [{ position: 11 }],
+     identification: [{ position: 11 }]
+  }
+  @EndUserText.label: 'booking Id'
+  BookingId;
+  @UI:{  lineItem: [{ position: 12 }],
+     identification: [{ position: 12 }]
+  }
+  @EndUserText.label: 'Booking Date'
+  BookingDate;
+  @UI:{  lineItem: [{ position: 13 }],
+     identification: [{ position: 13 }]
+  }
+  @EndUserText.label: 'Customer Id'
+  @UI.textArrangement: #TEXT_LAST
+  @UI.selectionField: [{ position: 10 }]
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'zi_booking48', element: 'CustomerId' } }]
+  CustomerId;
+  @UI:{  lineItem: [{ position: 14 }],
+     identification: [{ position: 14 }]
+  }
+  @EndUserText.label: 'Carrier Id'
+  @UI.textArrangement: #TEXT_LAST
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'zi_booking48', element: 'CarrierId' } }]
+  CarrierId;
+  @UI:{  lineItem: [{ position: 15 }],
+     identification: [{ position: 15 }]
+  }
+  @EndUserText.label: 'Connection Id'
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'zi_booking48', element: 'ConnectionId' } }]
+  ConnectionId;
+  @UI:{  lineItem: [{ position: 16 }],
+     identification: [{ position: 16 }]
+  }
+  @EndUserText.label: 'Flight Date'
+  FlightDate;
+  @UI:{  lineItem: [{ position: 17 }],
+     identification: [{ position: 17 }]
+  }
+  @EndUserText.label: 'flight Price'
+  FlightPrice;
+  @UI:{  lineItem: [{ position: 18 }],
+     identification: [{ position: 18 }]
+  }
+  @EndUserText.label: 'Currency Code'
+  CurrencyCode;
+
+}

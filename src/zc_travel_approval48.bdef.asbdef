@@ -1,0 +1,24 @@
+projection;
+strict ( 2 );
+
+define behavior for zc_travel_approval48 alias Travel
+use etag
+{
+  //  use create;
+  use update;
+  //  use delete;
+
+  use action AcceptTravel as acceptTravel;
+  use action RejectTravel as rejectTravel;
+  //  use action copyTravel;
+
+  //  use association _Booking { create; }
+}
+
+//define behavior for zc_booking_approval48 alias Booking
+//{
+//  use update;
+//  use delete;
+//
+//  use association _travel;
+//}
