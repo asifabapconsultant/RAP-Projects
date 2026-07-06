@@ -1,26 +1,37 @@
 CLASS lhc_Travel DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
-    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
-      IMPORTING keys REQUEST requested_authorizations FOR Travel RESULT result.
-
-    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
-      IMPORTING REQUEST requested_authorizations FOR Travel RESULT result.
-
     METHODS earlynumbering_create FOR NUMBERING
       IMPORTING entities FOR CREATE Travel.
 
     METHODS earlynumbering_cba_Booking FOR NUMBERING
       IMPORTING entities FOR CREATE Travel\_Booking.
 
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR Travel RESULT result.
+
+    METHODS AcceptTravel FOR MODIFY
+      IMPORTING keys FOR ACTION Travel~AcceptTravel RESULT result.
+
+    METHODS copyTravel FOR MODIFY
+      IMPORTING keys FOR ACTION Travel~CopyTravel.
+
+    METHODS RejectTravel FOR MODIFY
+      IMPORTING keys FOR ACTION Travel~RejectTravel RESULT result.
+
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR Travel RESULT result.
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR travel RESULT result.
+    METHODS customerid FOR VALIDATE ON SAVE
+      IMPORTING keys FOR travel~customerid.
+
 ENDCLASS.
 
 CLASS lhc_Travel IMPLEMENTATION.
 
   METHOD get_instance_authorizations.
-  ENDMETHOD.
-
-  METHOD get_global_authorizations.
   ENDMETHOD.
 
   METHOD earlynumbering_create.
@@ -103,72 +114,21 @@ CLASS lhc_Travel IMPLEMENTATION.
 
   ENDMETHOD.
 
-ENDCLASS.
-
-CLASS lhc_Booking DEFINITION INHERITING FROM cl_abap_behavior_handler.
-  PRIVATE SECTION.
-
-    METHODS earlynumbering_cba_Booksuppl FOR NUMBERING
-      IMPORTING entities FOR CREATE Booking\_Booksuppl.
-    METHODS AcceptTravel FOR MODIFY
-      IMPORTING keys FOR ACTION Travel~AcceptTravel RESULT result.
-
-    METHODS copyTravel FOR MODIFY
-      IMPORTING keys FOR ACTION Travel~CopyTravel.
-
-    METHODS RejectTravel FOR MODIFY
-      IMPORTING keys FOR ACTION Travel~RejectTravel RESULT result.
-
-ENDCLASS.
-
-CLASS lhc_Booking IMPLEMENTATION.
-
-  METHOD earlynumbering_cba_Booksuppl.
-
-    DATA: max_booking_supp_id TYPE /dmo/booking_supplement_id.
-
-    READ ENTITIES OF zi_travel48 IN LOCAL MODE
-    ENTITY Booking BY \_Booksuppl
-    FROM CORRESPONDING #( entities )
-    LINK DATA(booking_bookingsuppls).
-
-    LOOP AT entities ASSIGNING FIELD-SYMBOL(<ls_entities>) GROUP BY <ls_entities>-%tky.
-
-      max_booking_supp_id = REDUCE #( INIT max = CONV /dmo/supplement_id( '0' )
-      FOR booking IN booking_bookingsuppls USING KEY entity
-      WHERE ( source-TravelId = <ls_entities>-TravelId
-          AND source-BookingId = <ls_entities>-BookingId
-       )
-       NEXT max = COND /dmo/booking_supplement_id( WHEN booking-target-bookingsupplementid > max
-                                                   THEN booking-target-BookingId
-                                                   ELSE max )
-                                    ) .
-
-      max_booking_supp_id = REDUCE #( INIT curnum = max_booking_supp_id
-      FOR entity IN entities USING KEY entity
-      WHERE ( TravelId = <ls_entities>-TravelId
-          AND BookingId = <ls_entities>-BookingId )
-      FOR target IN entity-%target
-      NEXT curnum = COND /dmo/booking_supplement_id( WHEN target-BookingSupplementId > curnum
-                                                     THEN target-BookingSupplementId
-                                                     ELSE curnum )
-                                    ).
-
-      LOOP AT entities ASSIGNING FIELD-SYMBOL(<ls_entity>) USING KEY entity WHERE TravelId = <ls_entities>-TravelId
-                                                                              AND BookingId = <ls_entities>-BookingId.
-
-        LOOP AT <ls_entity>-%target ASSIGNING FIELD-SYMBOL(<ls_target>).
-          APPEND CORRESPONDING #( <ls_target> ) TO mapped-bookingsuppl ASSIGNING FIELD-SYMBOL(<mappped_booksuppl>).
-          IF <ls_target>-BookingSupplementId IS INITIAL.
-            max_booking_supp_id += 10.
-            <mappped_booksuppl>-BookingSupplementId = max_booking_supp_id.
-          ENDIF.
-        ENDLOOP.
-      ENDLOOP.
-    ENDLOOP.
-  ENDMETHOD.
-
   METHOD AcceptTravel.
+
+    MODIFY ENTITIES OF zi_travel48 IN LOCAL MODE
+      ENTITY Travel
+      UPDATE
+      FIELDS ( Status )
+      WITH VALUE #( FOR ls_key IN keys ( %tky = ls_key-%tky
+                                         Status = 'B' ) ).
+    READ ENTITIES OF zi_travel48 IN LOCAL MODE
+    ENTITY Travel
+    ALL FIELDS WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_result).
+
+    result = VALUE #( FOR ls_result IN lt_result ( %tky = ls_result-%tky
+                                                   %param = ls_result ) ).
   ENDMETHOD.
 
   METHOD copyTravel.
@@ -240,6 +200,135 @@ CLASS lhc_Booking IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD RejectTravel.
+    MODIFY ENTITIES OF zi_travel48 IN LOCAL MODE
+        ENTITY Travel
+        UPDATE
+        FIELDS ( Status )
+        WITH VALUE #( FOR ls_key IN keys ( %tky = ls_key-%tky
+                                           Status = 'X' ) ).
+    READ ENTITIES OF zi_travel48 IN LOCAL MODE
+    ENTITY Travel
+    ALL FIELDS WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_result).
+
+    result = VALUE #( FOR ls_result IN lt_result ( %tky = ls_result-%tky
+                                                   %param = ls_result ) ).
   ENDMETHOD.
+
+  METHOD get_instance_features.
+
+    READ ENTITIES OF zi_travel48 IN LOCAL MODE
+    ENTITY Travel
+    FIELDS ( TravelId Status )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_travel).
+
+    result = VALUE #( FOR ls_travel IN lt_travel
+                     ( %tky = ls_travel-%tky
+                      %features-%action-AcceptTravel = COND #( WHEN ls_travel-Status = 'N'
+                                                               THEN if_abap_behv=>fc-o-enabled
+                                                               ELSE if_abap_behv=>fc-o-disabled )
+                         %features-%action-RejectTravel = COND #( WHEN ls_travel-Status = 'X'
+                                                               THEN if_abap_behv=>fc-o-disabled
+                                                               ELSE if_abap_behv=>fc-o-enabled )
+                         %features-%assoc-_Booking = COND #( WHEN ls_travel-Status = 'X'
+                                                               THEN if_abap_behv=>fc-o-disabled
+                                                               ELSE if_abap_behv=>fc-o-enabled )
+                       )
+                    ).
+
+  ENDMETHOD.
+
+  METHOD get_global_authorizations.
+  ENDMETHOD.
+
+  METHOD Customerid.
+
+    READ ENTITIES OF zi_travel48 IN LOCAL MODE
+    ENTITY Travel
+    FIELDS ( TravelId CustomerId )
+    WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_travel).
+
+
+    SELECT FROM ztravel48
+    FIELDS ( customer_id )
+    INTO TABLE @DATA(lt_traveldb).
+    DELETE ADJACENT DUPLICATES FROM lt_travel COMPARING CustomerId.
+
+    LOOP AT lt_travel ASSIGNING FIELD-SYMBOL(<ls_travel>).
+      IF <ls_travel>-CustomerId IS INITIAL OR NOT line_exists( lt_traveldb[ customer_id = <ls_travel>-CustomerId ] ).
+        APPEND VALUE #( Travelid = <ls_travel>-TravelId  ) TO failed-travel.
+        reported-travel = VALUE #( ( TravelId = <ls_travel>-TravelId
+                                     %msg = new_message_with_text(
+                                     severity = if_abap_behv_message=>severity-error
+                                     text = 'Customer Id Should be filled' )
+                                 ) ).
+      ENDIF.
+    ENDLOOP.
+
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_Booking DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS earlynumbering_cba_Booksuppl FOR NUMBERING
+      IMPORTING entities FOR CREATE Booking\_Booksuppl.
+
+
+ENDCLASS.
+
+CLASS lhc_Booking IMPLEMENTATION.
+
+  METHOD earlynumbering_cba_Booksuppl.
+
+    DATA: max_booking_supp_id TYPE /dmo/booking_supplement_id.
+
+    READ ENTITIES OF zi_travel48 IN LOCAL MODE
+    ENTITY Booking BY \_Booksuppl
+    FROM CORRESPONDING #( entities )
+    LINK DATA(booking_bookingsuppls).
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<ls_entities>) GROUP BY <ls_entities>-%tky.
+
+      max_booking_supp_id = REDUCE #( INIT max = CONV /dmo/supplement_id( '0' )
+      FOR booking IN booking_bookingsuppls USING KEY entity
+      WHERE ( source-TravelId = <ls_entities>-TravelId
+          AND source-BookingId = <ls_entities>-BookingId
+       )
+       NEXT max = COND /dmo/booking_supplement_id( WHEN booking-target-bookingsupplementid > max
+                                                   THEN booking-target-BookingId
+                                                   ELSE max )
+                                    ) .
+
+      max_booking_supp_id = REDUCE #( INIT curnum = max_booking_supp_id
+      FOR entity IN entities USING KEY entity
+      WHERE ( TravelId = <ls_entities>-TravelId
+          AND BookingId = <ls_entities>-BookingId )
+      FOR target IN entity-%target
+      NEXT curnum = COND /dmo/booking_supplement_id( WHEN target-BookingSupplementId > curnum
+                                                     THEN target-BookingSupplementId
+                                                     ELSE curnum )
+                                    ).
+
+      LOOP AT entities ASSIGNING FIELD-SYMBOL(<ls_entity>) USING KEY entity WHERE TravelId = <ls_entities>-TravelId
+                                                                              AND BookingId = <ls_entities>-BookingId.
+
+        LOOP AT <ls_entity>-%target ASSIGNING FIELD-SYMBOL(<ls_target>).
+          APPEND CORRESPONDING #( <ls_target> ) TO mapped-bookingsuppl ASSIGNING FIELD-SYMBOL(<mappped_booksuppl>).
+          IF <ls_target>-BookingSupplementId IS INITIAL.
+            max_booking_supp_id += 10.
+            <mappped_booksuppl>-BookingSupplementId = max_booking_supp_id.
+          ENDIF.
+        ENDLOOP.
+      ENDLOOP.
+    ENDLOOP.
+  ENDMETHOD.
+
+
+
 
 ENDCLASS.
