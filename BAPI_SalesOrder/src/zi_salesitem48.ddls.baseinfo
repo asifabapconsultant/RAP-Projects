@@ -1,0 +1,13 @@
+{
+  "BASEINFO": {
+    "FROM": [
+      "I_MATERIALTEXT",
+      "I_PLANT",
+      "I_UNITOFMEASURETEXT",
+      "VBAP"
+    ],
+    "ASSOCIATED": [
+      "ZI_SALESHDR48"
+    ]
+  }
+}

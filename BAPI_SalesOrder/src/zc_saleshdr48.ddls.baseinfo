@@ -1,0 +1,14 @@
+{
+  "BASEINFO": {
+    "FROM": [
+      "ZI_SALESHDR48"
+    ],
+    "ASSOCIATED": [
+      "ZC_SALESITEM48",
+      "ZI_SALESITEM48"
+    ],
+    "BASE": [
+      "ZI_SALESHDR48"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "BASEINFO": {
+    "FROM": [
+      "I_CUSTOMER",
+      "TSPAT",
+      "TVAKT",
+      "TVKOT",
+      "TVTWT",
+      "VBAK"
+    ],
+    "ASSOCIATED": [
+      "ZI_SALESITEM48"
+    ]
+  }
+}

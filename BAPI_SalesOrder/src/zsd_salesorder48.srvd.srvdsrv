@@ -1,0 +1,7 @@
+@EndUserText.label: 'salesorder48'
+define service Zsd_salesorder48 {
+  expose zc_saleshdr48;
+  expose zc_salesitem48;
+  expose zi_saleshdr48;
+  expose zi_salesitem48;
+}

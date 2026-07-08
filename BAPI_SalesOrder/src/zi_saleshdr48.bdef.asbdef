@@ -1,0 +1,39 @@
+unmanaged implementation in class zbp_i_saleshdr48 unique;
+strict ( 2 );
+
+with draft;
+
+define behavior for zi_saleshdr48 alias header
+late numbering
+draft table zvbak48_d
+lock master
+total etag aedat
+authorization master ( instance )
+etag master aedat
+{
+  create;
+  update;
+  delete;
+  field ( readonly ) vbeln;
+
+  draft action Activate optimized;
+  draft action Edit;
+  draft action Resume;
+  draft action Discard;
+  draft determine action Prepare;
+
+  association _item { create; with draft; }
+}
+
+define behavior for zi_salesitem48 alias item
+late numbering
+draft table zvbap48_d
+lock dependent by _header
+authorization dependent by _header
+etag dependent by _header
+{
+  update;
+  delete;
+  field ( readonly ) vbeln, posnr;
+  association _header { with draft; }
+}

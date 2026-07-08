@@ -1,0 +1,82 @@
+@Metadata.layer: #CORE
+@UI.headerInfo: { typeName: ' Sales Order Item', typeNamePlural: ' Sales Order Items', title: { label: ' Sales Order Item', value: 'posnr' } }
+
+annotate entity zc_salesitem48 with
+{
+  @UI.facet: [
+                 {
+  id: 'Itemcol',
+  type: #COLLECTION,
+  position: 10,
+  label: 'Item'
+                 },
+  {
+  id: 'IFldp1',
+   parentId: 'Itemcol',
+   type: #FIELDGROUP_REFERENCE,
+   position: 10,
+   label: 'Sales Documemt Details',
+   targetQualifier: 'SDocFldp1',
+   purpose: #STANDARD
+  },
+  { id: 'IFldp2',
+   parentId: 'Itemcol',
+   type: #FIELDGROUP_REFERENCE,
+   position: 20,
+   label: 'Material Details',
+   targetQualifier: 'MatFldp2',
+   purpose: #STANDARD
+    },
+    { id: 'IFldp3',
+   parentId: 'Itemcol',
+   type: #FIELDGROUP_REFERENCE,
+   position: 30,
+   label: 'Plant Details',
+   targetQualifier: 'PlntFldp3',
+   purpose: #STANDARD
+    }
+  ]
+  @EndUserText.label: 'Sales Document No'
+  @UI.lineItem: [{ position: 10 }]
+  //  @UI.identification: [{ position: 10 }]
+  @UI.fieldGroup: [{ qualifier: 'SDocFldp1', importance: #HIGH,position: 10 }]
+  vbeln;
+  @EndUserText.label: 'Sales Item No'
+  @UI.lineItem: [{ position: 15 }]
+  //  @UI.identification: [{ position: 15 }]
+  @UI.fieldGroup: [{ qualifier: 'SDocFldp1', importance: #HIGH, position: 20 }]
+  posnr;
+  @EndUserText.label: 'Material'
+  @UI.lineItem: [{ position: 20 }]
+  //  @UI.identification: [{ position: 20 }]
+  @UI.fieldGroup: [{ qualifier: 'MatFldp2', importance: #HIGH, position: 10 }]
+  @Consumption.valueHelpDefinition: [{ entity:{name: 'I_Product', element: 'Product'} } ]
+  matnr;
+  @EndUserText.label: 'Target Quantity'
+  @UI.lineItem: [{ position: 25 }]
+  //  @UI.identification: [{ position: 25 }]
+  @UI.fieldGroup: [{ qualifier: 'MatFldp2', importance: #HIGH, position: 20 }]
+  zmeng;
+  @EndUserText.label: 'Quantity type'
+  @UI.lineItem: [{ position: 30 }]
+  //  @UI.identification: [{ position: 30 }]
+  @UI.fieldGroup: [{ qualifier: 'MatFldp2', importance: #HIGH, position: 30 }]
+
+  @Consumption.valueHelpDefinition: [{ entity:{name: 'I_UnitOfMeasure', element: 'UnitOfMeasure'} } ]
+  zieme;
+  @EndUserText.label: 'Plant'
+  @UI.lineItem: [{ position: 35 }]
+  //  @UI.identification: [{ position: 35 }]
+  @UI.fieldGroup: [{ qualifier: 'PlntFldp3', importance: #HIGH, position: 10 }]
+  @Consumption.valueHelpDefinition: [{ entity:{name: 'I_Plant', element: 'Plant'} } ]
+  WERKS;
+
+}
+
+//  { id: 'Item',
+//                  importance: #HIGH,
+//                  label: 'Item',
+//                  type: #IDENTIFICATION_REFERENCE,
+//                  purpose: #STANDARD,
+//                  position: 10
+//                 },
